@@ -1,4 +1,4 @@
-namespace CveSearchApp;
+namespace ZeroDaySearch;
 
 public static class CveFormatter
 {

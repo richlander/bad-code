@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace CveSearchApp;
+namespace ZeroDaySearch;
 
 public class CveDataSource
 {

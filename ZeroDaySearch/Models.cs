@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace CveSearchApp;
+namespace ZeroDaySearch;
 
 public record ReleaseIndex(
     [property: JsonProperty("latest_major")] string LatestMajor,

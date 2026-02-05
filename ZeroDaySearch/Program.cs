@@ -1,5 +1,5 @@
 ﻿using System.CommandLine;
-using CveSearchApp;
+using ZeroDaySearch;
 
 var rootCommand = new RootCommand(".NET CVE Search Tool - Search and filter .NET security vulnerabilities");
 
