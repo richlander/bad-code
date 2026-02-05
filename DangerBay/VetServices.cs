@@ -1,4 +1,4 @@
-namespace DangerBayApp;
+namespace DangerBay;
 
 // Dr. Grant Roberts, marine veterinarian extraordinaire
 public class VetServices

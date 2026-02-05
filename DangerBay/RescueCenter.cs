@@ -1,4 +1,4 @@
-namespace DangerBayApp;
+namespace DangerBay;
 
 // The heart of the Vancouver Aquarium Marine Science Centre
 public class RescueCenter

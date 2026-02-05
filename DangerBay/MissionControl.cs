@@ -1,4 +1,4 @@
-namespace DangerBayApp;
+namespace DangerBay;
 
 // "We've got a call!" - every episode
 public class MissionControl

@@ -1,4 +1,4 @@
-namespace DangerBayApp;
+namespace DangerBay;
 
 // Where the seals, otters, and orcas live
 public class HabitatManager

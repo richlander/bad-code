@@ -1,4 +1,4 @@
-namespace DangerBayApp;
+namespace DangerBay;
 
 public enum AnimalStatus
 {

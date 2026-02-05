@@ -2,7 +2,7 @@
 // "It's not just a job, it's an adventure!"
 // Based at the Vancouver Aquarium Marine Science Centre
 
-using DangerBayApp;
+using DangerBay;
 
 Console.WriteLine("=== Danger Bay Marine Rescue System ===\n");
 
