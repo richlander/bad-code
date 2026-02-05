@@ -1,4 +1,4 @@
-namespace SdkDownloadApp;
+namespace DarkChannel;
 
 public record ReleaseIndex(
     string LatestMajor,

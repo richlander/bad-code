@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Linq.Expressions;
 
-namespace SdkDownloadApp;
+namespace DarkChannel;
 
 public class DownloadQueryProvider : IQueryProvider
 {

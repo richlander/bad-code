@@ -1,4 +1,4 @@
-namespace SdkDownloadApp;
+namespace DarkChannel;
 
 public class ReleaseAnalyzer
 {

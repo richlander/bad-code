@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace SdkDownloadApp;
+namespace DarkChannel;
 
 public class SdkDataSource
 {
