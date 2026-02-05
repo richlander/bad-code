@@ -45,6 +45,16 @@ Use this repository to evaluate how well LLMs can:
 
 A general-purpose broken application demonstrating database connectivity, JSON processing, and common coding mistakes.
 
+### BadWolf
+
+A Doctor Who "Bad Wolf" themed application demonstrating incorrect usage of performance-related features. Features Rose, the TARDIS, the Game Station, Daleks, Cybermen, and The Moment - with thematic hints that allude to the errors without giving them away.
+
+- **Span<T> violations**: Using Span as class fields, properties, type arguments, in async methods, iterators, and lambdas
+- **Stackalloc misuse**: Returning stack-allocated memory, stackalloc in loops, escaping pointers
+- **Unsafe code errors**: Out-of-bounds Unsafe.Add, incorrect MemoryMarshal casts, ref returns to locals
+- **Memory management**: ArrayPool without return, GCHandle without Free, dangling pointers after fixed scope
+- **StructLayout problems**: Overlapping field offsets with incompatible types
+
 ### CveSearchApp
 
 A .NET CVE search tool with two key migration challenges:
@@ -52,7 +62,7 @@ A .NET CVE search tool with two key migration challenges:
 - **System.CommandLine breaking changes**: Uses an outdated API pattern (e.g., `Handler.SetHandler`) that no longer exists in the latest version. LLMs trained on older documentation may not know the new API.
 - **AOT compatibility**: Has `PublishAot=true` but uses Newtonsoft.Json, which doesn't support Native AOT. Requires migration to System.Text.Json with source generators.
 
-Both projects target .NET 10.0.
+All three projects target .NET 10.0.
 
 ## Usage
 
