@@ -27,6 +27,7 @@ All projects target .NET 10.0 and use themed names (scary movies, nostalgic TV s
 | DangerBay | 86 | CS8600-CS8625 | 80s Canadian TV | Nullable reference type errors |
 | DarkChannel | 16 | CS0834, CS8122, CS8514 | Spy/covert | Expression tree LINQ errors |
 | EnterTheRing | 29 | CS0029, CS1929, CS4014 | The Expanse | Async/await misuse |
+| Upload | 42 | CS0104, CS4012, CS8345, CS9244 | Amazon Prime | 61 packages, Span/async/ambiguous errors |
 | Wilderpeople | 80 | CS8852, CS9035 | NZ film | Init-only and required member errors |
 | ZeroDaySearch | 51 | Various | Security | System.CommandLine breaking API changes |
 
