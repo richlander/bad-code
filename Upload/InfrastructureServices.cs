@@ -28,55 +28,32 @@ public class InfrastructureServices
     private AmazonStepFunctionsClient _stepFunctionsClient;
     
     // Manage Azure VMs for consciousness processing
-    public async Task CreateProcessingVM(string name)
+    public async System.Threading.Tasks.Task CreateProcessingVM(string name)
     {
         var subscription = await _armClient.GetDefaultSubscriptionAsync();
-        var resourceGroup = await subscription.GetResourceGroups().GetAsync("lakeview-rg");
+        // ERROR: GetResourceGroupAsync doesn't exist - should be GetResourceGroups().GetAsync
+        var resourceGroup = await subscription.GetResourceGroupAsync("lakeview-rg");
         
-        var vmCollection = resourceGroup.Value.GetVirtualMachines();
+        // ERROR: VirtualMachines doesn't exist - should be GetVirtualMachines()
+        var vmCollection = resourceGroup.Value.VirtualMachines;
         
-        var vmData = new VirtualMachineData(Azure.Core.AzureLocation.WestUS2)
-        {
-            HardwareProfile = new VirtualMachineHardwareProfile
-            {
-                VmSize = VirtualMachineSizeType.StandardD4V3
-            },
-            OSProfile = new VirtualMachineOSProfile
-            {
-                ComputerName = name,
-                AdminUsername = "lakeview",
-                AdminPassword = "SecurePassword123!"
-            },
-            StorageProfile = new VirtualMachineStorageProfile
-            {
-                ImageReference = new ImageReference
-                {
-                    Publisher = "Canonical",
-                    Offer = "UbuntuServer",
-                    Sku = "20.04-LTS",
-                    Version = "latest"
-                }
-            }
-        };
+        var vmData = new VirtualMachineData(Azure.Core.AzureLocation.WestUS2);
         
-        vmData.Location = "eastus";
-        vmData.HardwareProfile.VmSize = "Custom_Size";
+        // ERROR: CreateAsync doesn't exist - should be CreateOrUpdateAsync
+        var operation = await vmCollection.CreateAsync(name, vmData);
         
-        var operation = await vmCollection.CreateOrUpdateAsync(
-            Azure.WaitUntil.Completed, 
-            name, 
-            vmData);
-        
-        Console.WriteLine($"VM created: {operation.Value.Data.Name}");
+        // ERROR: VMName doesn't exist - should be Data.Name
+        Console.WriteLine($"VM created: {operation.Value.VMName}");
     }
     
     // Create storage account for backups
-    public async Task CreateStorageAccount(string name)
+    public async System.Threading.Tasks.Task CreateStorageAccount(string name)
     {
         var subscription = await _armClient.GetDefaultSubscriptionAsync();
         var resourceGroup = await subscription.GetResourceGroups().GetAsync("lakeview-rg");
         
-        var storageCollection = resourceGroup.Value.GetStorageAccounts();
+        // ERROR: StorageAccounts doesn't exist - should be GetStorageAccounts()
+        var storageCollection = resourceGroup.Value.StorageAccounts;
         
         var storageData = new StorageAccountCreateOrUpdateContent(
             new StorageSku(StorageSkuName.StandardLrs),
@@ -100,7 +77,7 @@ public class InfrastructureServices
     }
     
     // AWS EC2 for Horizon processing
-    public async Task LaunchInstance(string imageId)
+    public async System.Threading.Tasks.Task LaunchInstance(string imageId)
     {
         var request = new RunInstancesRequest
         {
@@ -108,41 +85,22 @@ public class InfrastructureServices
             InstanceType = InstanceType.T3Medium,
             MinCount = 1,
             MaxCount = 1,
-            KeyName = "horizon-key",
-            SubnetId = "subnet-12345",
-            SecurityGroupIds = new List<string> { "sg-12345" },
-            TagSpecifications = new List<TagSpecification>
-            {
-                new TagSpecification
-                {
-                    ResourceType = ResourceType.Instance,
-                    Tags = new List<Tag>
-                    {
-                        new Tag { Key = "Name", Value = "Horizon-Processor" },
-                        new Tag { Key = "Environment", Value = "Production" }
-                    }
-                }
-            },
-            IamInstanceProfile = new IamInstanceProfileSpecification
-            {
-                Name = "horizon-instance-profile"
-            }
         };
         
-        request.MinCount = -1;
-        request.InstanceType = "invalid-type";
-        
-        var response = await _ec2Client.RunInstancesAsync(request);
+        // ERROR: LaunchAsync doesn't exist - should be RunInstancesAsync
+        var response = await _ec2Client.LaunchAsync(request);
         
         foreach (var instance in response.Reservation.Instances)
         {
-            Console.WriteLine($"Instance: {instance.InstanceId}, State: {instance.State.Name}");
-            instance.InstanceId = "modified";
+            // ERROR: ID doesn't exist - should be InstanceId
+            Console.WriteLine($"Instance: {instance.ID}");
+            // ERROR: CurrentState doesn't exist - should be State
+            Console.WriteLine($"State: {instance.CurrentState.Name}");
         }
     }
     
     // ECS for container workloads
-    public async Task RunTask(string cluster, string taskDef)
+    public async System.Threading.Tasks.Task RunContainerTask(string cluster, string taskDef)
     {
         var request = new RunTaskRequest
         {
@@ -150,73 +108,49 @@ public class InfrastructureServices
             TaskDefinition = taskDef,
             LaunchType = LaunchType.FARGATE,
             Count = 1,
-            NetworkConfiguration = new NetworkConfiguration
-            {
-                AwsvpcConfiguration = new AwsVpcConfiguration
-                {
-                    Subnets = new List<string> { "subnet-123" },
-                    SecurityGroups = new List<string> { "sg-123" },
-                    AssignPublicIp = AssignPublicIp.ENABLED
-                }
-            },
-            Overrides = new TaskOverride
-            {
-                ContainerOverrides = new List<ContainerOverride>
-                {
-                    new ContainerOverride
-                    {
-                        Name = "consciousness-processor",
-                        Environment = new List<KeyValuePair>
-                        {
-                            new KeyValuePair { Name = "TIER", Value = "Horizon" }
-                        }
-                    }
-                }
-            }
         };
         
-        var response = await _ecsClient.RunTaskAsync(request);
+        // ERROR: StartTaskAsync doesn't exist - should be RunTaskAsync
+        var response = await _ecsClient.StartTaskAsync(request);
         
         foreach (var task in response.Tasks)
         {
-            Console.WriteLine($"Task: {task.TaskArn}");
-            task.Cpu = "modified";
+            // ERROR: Arn doesn't exist - should be TaskArn
+            Console.WriteLine($"Task: {task.Arn}");
+            // ERROR: CpuUnits doesn't exist - should be Cpu
+            Console.WriteLine($"CPU: {task.CpuUnits}");
         }
     }
     
     // Lambda for event processing
-    public async Task<string> InvokeLambda(string functionName, string payload)
+    public async System.Threading.Tasks.Task<string> InvokeLambda(string functionName, string payload)
     {
         var request = new InvokeRequest
         {
             FunctionName = functionName,
             Payload = payload,
-            InvocationType = InvocationType.RequestResponse,
-            LogType = LogType.Tail
         };
         
-        var response = await _lambdaClient.InvokeAsync(request);
+        // ERROR: ExecuteAsync doesn't exist - should be InvokeAsync
+        var response = await _lambdaClient.ExecuteAsync(request);
         
-        response.StatusCode = 500;
-        
-        using var reader = new StreamReader(response.Payload);
-        return await reader.ReadToEndAsync();
+        // ERROR: Result doesn't exist - should be Payload
+        return response.Result;
     }
     
     // Step Functions for workflows
-    public async Task<string> StartExecution(string stateMachine, string input)
+    public async System.Threading.Tasks.Task<string> StartWorkflow(string stateMachineArn, string input)
     {
         var request = new StartExecutionRequest
         {
-            StateMachineArn = stateMachine,
+            StateMachineArn = stateMachineArn,
             Input = input,
-            Name = $"execution-{Guid.NewGuid()}"
         };
         
-        var response = await _stepFunctionsClient.StartExecutionAsync(request);
+        // ERROR: StartAsync doesn't exist - should be StartExecutionAsync
+        var response = await _stepFunctionsClient.StartAsync(request);
         
-        response.StartDate = DateTime.UtcNow;
-        
-        return response.ExecutionArn;
+        // ERROR: Arn doesn't exist - should be ExecutionArn
+        return response.Arn;
     }
 }

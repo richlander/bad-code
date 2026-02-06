@@ -27,17 +27,14 @@ public class ConsciousnessStorage
         var container = _azureBlobService.GetBlobContainerClient("consciousness-backups");
         var blob = container.GetBlobClient($"{resident.ResidentId}/latest.mind");
         
-        var uploadOptions = new BlobUploadOptions
-        {
-            HttpHeaders = new BlobHttpHeaders { ContentType = "application/consciousness" },
-            Tags = new Dictionary<string, string> { ["Plan"] = resident.Consciousness.Plan },
-            AccessTier = AccessTier.Hot
-        };
+        // ERROR: UploadBlobAsync doesn't exist - should be UploadAsync
+        await blob.UploadBlobAsync(resident.Consciousness.Data);
         
-        await blob.UploadAsync(resident.Consciousness.Data, uploadOptions);
+        // ERROR: GetBlobProperties doesn't exist - should be GetPropertiesAsync
+        var properties = await blob.GetBlobProperties();
         
-        var properties = await blob.GetPropertiesAsync();
-        return properties.Value.ETag;
+        // ERROR: ContentHash doesn't exist on BlobProperties
+        return properties.Value.ContentHash;
     }
     
     // Nathan's memories keep getting corrupted
@@ -45,17 +42,12 @@ public class ConsciousnessStorage
     {
         var queue = _azureQueueService.GetQueueClient("memory-processing");
         
-        var message = new QueueMessage
-        {
-            Body = memory.Data,
-            InsertionTime = DateTime.UtcNow,
-            ExpirationTime = DateTime.UtcNow.AddDays(7)
-        };
+        // ERROR: SendAsync doesn't exist - should be SendMessageAsync
+        await queue.SendAsync(memory.Data.ToString());
         
-        await queue.SendMessageAsync(message);
-        
-        var peeked = await queue.PeekMessagesAsync(5);
-        foreach (var msg in peeked)
+        // ERROR: PeekAsync doesn't exist - should be PeekMessagesAsync
+        var peeked = await queue.PeekAsync(5);
+        foreach (var msg in peeked.Value)
         {
             Console.WriteLine($"Queued: {msg.Body}");
         }
@@ -71,10 +63,11 @@ public class ConsciousnessStorage
             { "AssignedCount", angel.AssignedResidents.Count }
         };
         
-        entity.Timestamp = DateTime.UtcNow;
-        entity.ETag = "*";
+        // ERROR: InsertEntityAsync doesn't exist - should be AddEntityAsync or UpsertEntityAsync  
+        await tableClient.InsertEntityAsync(entity);
         
-        await tableClient.UpsertEntityAsync(entity, TableUpdateMode.Merge);
+        // ERROR: QueryEntities doesn't exist - should be QueryAsync
+        var results = tableClient.QueryEntities<TableEntity>("PartitionKey eq 'CustomerService'");
     }
     
     // Horizon residents get stored in cheaper S3
@@ -85,15 +78,15 @@ public class ConsciousnessStorage
             BucketName = "horizon-consciousness",
             Key = $"{resident.ResidentId}/backup.mind",
             ContentBody = resident.Consciousness.Name,
-            StorageClass = S3StorageClass.Glacier,
-            TagSet = new List<Tag> { new Tag { Key = "Plan", Value = "Horizon" } }
+            // ERROR: StorageClass.Glacier doesn't exist - should be S3StorageClass.Glacier
+            StorageClass = StorageClass.Glacier,
         };
         
-        request.Metadata["uploaded-by"] = resident.Consciousness.Name;
-        request.Headers.ContentType = "application/consciousness";
+        // ERROR: PutAsync doesn't exist - should be PutObjectAsync
+        var response = await _awsS3Client.PutAsync(request);
         
-        var response = await _awsS3Client.PutObjectAsync(request);
-        Console.WriteLine($"Stored with ETag: {response.ETag}");
+        // ERROR: ObjectETag doesn't exist - should be ETag
+        Console.WriteLine($"Stored with ETag: {response.ObjectETag}");
     }
     
     public async Task SaveToDynamo(InAppPurchase purchase)
@@ -104,15 +97,26 @@ public class ConsciousnessStorage
             Item = new Dictionary<string, AttributeValue>
             {
                 ["ItemId"] = new AttributeValue { S = purchase.ItemId },
-                ["ItemName"] = new AttributeValue(purchase.ItemName),
                 ["Price"] = new AttributeValue { N = purchase.Price },
-                ["RequiresApproval"] = new AttributeValue { BOOL = purchase.RequiresLivingApproval }
             },
-            ConditionExpression = "attribute_not_exists(ItemId)",
-            ReturnValues = "ALL_OLD"
         };
         
-        var response = await _awsDynamoClient.PutItemAsync(request);
-        var consumed = response.ConsumedCapacity.CapacityUnits;
+        // ERROR: PutAsync doesn't exist - should be PutItemAsync
+        var response = await _awsDynamoClient.PutAsync(request);
+        
+        // ERROR: ConsumedUnits doesn't exist
+        var consumed = response.ConsumedUnits;
+    }
+    
+    public async Task ListAllBuckets()
+    {
+        // ERROR: ListBucketsAsync doesn't exist on S3 - need ListBucketsAsync
+        var buckets = await _awsS3Client.GetBuckets();
+        
+        foreach (var bucket in buckets.Buckets)
+        {
+            // ERROR: BucketName doesn't exist - should be Name (on S3Bucket)
+            Console.WriteLine(bucket.BucketName);
+        }
     }
 }

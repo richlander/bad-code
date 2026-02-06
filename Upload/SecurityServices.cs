@@ -25,14 +25,14 @@ public class SecurityServices
     
     public async Task<string> GetConsciousnessKey(string residentId)
     {
-        var secret = await _azureSecrets.GetSecretAsync($"consciousness-key-{residentId}");
+        // ERROR: GetAsync doesn't exist - should be GetSecretAsync
+        var secret = await _azureSecrets.GetAsync($"consciousness-key-{residentId}");
         
-        var properties = secret.Value.Properties;
-        properties.ExpiresOn = DateTime.UtcNow.AddYears(1);
-        properties.NotBefore = DateTime.UtcNow;
-        properties.Enabled = true;
+        // ERROR: SecretProperties doesn't have SetExpiry
+        secret.Value.Properties.SetExpiry(DateTime.UtcNow.AddYears(1));
         
-        await _azureSecrets.UpdateSecretPropertiesAsync(properties);
+        // ERROR: UpdateAsync doesn't exist - should be UpdateSecretPropertiesAsync
+        await _azureSecrets.UpdateAsync(secret.Value.Properties);
         
         return secret.Value.Value;
     }
@@ -40,18 +40,16 @@ public class SecurityServices
     // Encryption keys for premium residents
     public async Task<byte[]> EncryptMemory(byte[] data, string keyName)
     {
-        var key = await _azureKeys.GetKeyAsync(keyName);
+        // ERROR: GetAsync doesn't exist - should be GetKeyAsync
+        var key = await _azureKeys.GetAsync(keyName);
         
         var cryptoClient = new CryptographyClient(key.Value.Id, new DefaultAzureCredential());
         
-        var result = await cryptoClient.EncryptAsync(EncryptionAlgorithm.RsaOaep256, data);
+        // ERROR: EncryptDataAsync doesn't exist - should be EncryptAsync
+        var result = await cryptoClient.EncryptDataAsync(EncryptionAlgorithm.RsaOaep256, data);
         
-        var keyProperties = key.Value.Properties;
-        keyProperties.ExpiresOn = DateTime.UtcNow.AddMonths(6);
-        keyProperties.Enabled = true;
-        keyProperties.Tags["lastUsed"] = DateTime.UtcNow.ToString();
-        
-        return result.Ciphertext;
+        // ERROR: CiphertextBytes doesn't exist - should be Ciphertext
+        return result.CiphertextBytes;
     }
     
     public async Task<byte[]> SignData(byte[] data, string keyName)
@@ -59,21 +57,24 @@ public class SecurityServices
         var key = await _azureKeys.GetKeyAsync(keyName);
         var cryptoClient = new CryptographyClient(key.Value.Id, new DefaultAzureCredential());
         
-        var signResult = await cryptoClient.SignDataAsync(SignatureAlgorithm.RS256, data);
+        // ERROR: SignAsync doesn't exist with this signature - should be SignDataAsync
+        var signResult = await cryptoClient.SignAsync(SignatureAlgorithm.RS256, data);
         
-        return signResult.Signature;
+        // ERROR: SignatureBytes doesn't exist - should be Signature
+        return signResult.SignatureBytes;
     }
     
     // Certificate management for secure connections
     public async Task<string> GetCertificate(string certName)
     {
-        var cert = await _azureCerts.GetCertificateAsync(certName);
+        // ERROR: GetAsync doesn't exist - should be GetCertificateAsync
+        var cert = await _azureCerts.GetAsync(certName);
         
-        var properties = cert.Value.Properties;
-        Console.WriteLine($"Expires: {properties.ExpiresOn}");
-        Console.WriteLine($"Thumbprint: {properties.X509Thumbprint}");
+        // ERROR: Thumbprint doesn't exist - should be X509Thumbprint
+        Console.WriteLine($"Thumbprint: {cert.Value.Properties.Thumbprint}");
         
-        return Convert.ToBase64String(cert.Value.Cer);
+        // ERROR: CertificateBytes doesn't exist - should be Cer
+        return Convert.ToBase64String(cert.Value.CertificateBytes);
     }
     
     // AWS secrets for Horizon tier
@@ -82,18 +83,13 @@ public class SecurityServices
         var request = new GetSecretValueRequest
         {
             SecretId = secretName,
-            VersionId = "AWSCURRENT",
-            VersionStage = "AWSCURRENT"
         };
         
-        var response = await _awsSecrets.GetSecretValueAsync(request);
+        // ERROR: GetAsync doesn't exist - should be GetSecretValueAsync
+        var response = await _awsSecrets.GetAsync(request);
         
-        if (response.SecretString != null)
-        {
-            return response.SecretString;
-        }
-        
-        return Convert.ToBase64String(response.SecretBinary.ToArray());
+        // ERROR: Value doesn't exist - should be SecretString
+        return response.Value;
     }
     
     public async Task<byte[]> EncryptWithKms(byte[] data, string keyId)
@@ -102,15 +98,13 @@ public class SecurityServices
         {
             KeyId = keyId,
             Plaintext = new MemoryStream(data),
-            EncryptionAlgorithm = EncryptionAlgorithmSpec.RSAES_OAEP_SHA_256,
-            EncryptionContext = new Dictionary<string, string> 
-            { 
-                ["purpose"] = "consciousness-backup" 
-            }
         };
         
-        var response = await _awsKms.EncryptAsync(request);
-        return response.CiphertextBlob.ToArray();
+        // ERROR: EncryptDataAsync doesn't exist - should be EncryptAsync
+        var response = await _awsKms.EncryptDataAsync(request);
+        
+        // ERROR: Ciphertext doesn't exist - should be CiphertextBlob
+        return response.Ciphertext.ToArray();
     }
     
     // User authentication through Cognito
@@ -125,15 +119,13 @@ public class SecurityServices
                 ["USERNAME"] = username,
                 ["PASSWORD"] = password
             },
-            ClientMetadata = new Dictionary<string, string>
-            {
-                ["device"] = "neural-interface"
-            }
         };
         
-        var response = await _awsCognito.InitiateAuthAsync(request);
+        // ERROR: AuthenticateAsync doesn't exist - should be InitiateAuthAsync
+        var response = await _awsCognito.AuthenticateAsync(request);
         
-        return response.AuthenticationResult.AccessToken;
+        // ERROR: Token doesn't exist - should be AuthenticationResult.AccessToken
+        return response.Token;
     }
     
     public async Task RegisterUser(Angel angel)
@@ -143,18 +135,12 @@ public class SecurityServices
             ClientId = "lakeview-app-client",
             Username = angel.Name,
             Password = "TempPassword123!",
-            UserAttributes = new List<AttributeType>
-            {
-                new AttributeType { Name = "email", Value = $"{angel.Name}@lakeview.afterlife" },
-                new AttributeType { Name = "custom:department", Value = angel.Department }
-            },
-            ValidationData = new List<AttributeType>
-            {
-                new AttributeType { Name = "role", Value = "angel" }
-            }
         };
         
-        var response = await _awsCognito.SignUpAsync(request);
-        Console.WriteLine($"User confirmed: {response.UserConfirmed}");
+        // ERROR: RegisterAsync doesn't exist - should be SignUpAsync
+        var response = await _awsCognito.RegisterAsync(request);
+        
+        // ERROR: Confirmed doesn't exist - should be UserConfirmed
+        Console.WriteLine($"User confirmed: {response.Confirmed}");
     }
 }
