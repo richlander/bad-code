@@ -48,7 +48,7 @@ public class CveDataSource
             {
                 var majorRelease = await GetMajorReleaseAsync(release.Links.Self.Href);
 
-                foreach (var patch in majorRelease.Embedded.Patches.Where(p => p.Security && p.Links.CveJson != null))
+                foreach (var patch in (majorRelease.Embedded?.Patches ?? []).Where(p => p.Security && p.Links.CveJson != null))
                 {
                     var cveUrl = patch.Links.CveJson!.Href;
                     if (seenCveUrls.Add(cveUrl))
